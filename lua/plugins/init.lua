@@ -15,35 +15,35 @@ vim.opt.rtp:prepend(lazypath)
 -- Load lazy.nvim and plugins
 require("lazy").setup({
   { -- Treesitter for highlighting
-    "nvim-treesitter/nvim-treesitter",
-    event = "BufRead",
-    run = ":TSUpdate",
-    config = function()
-      require("nvim-treesitter.configs").setup({
-        highlight = {
-          enable = true,
-        },
-      })
-    end,
+	  "nvim-treesitter/nvim-treesitter",
+	  event = "BufRead",
+	  run = ":TSUpdate",
+	  config = function()
+		  require("nvim-treesitter.configs").setup({
+			  highlight = {
+				  enable = true,
+			  },
+		  })
+	  end,
   },
 
   { -- Fugitive for Git
-    "tpope/vim-fugitive",
-    cmd = { "G", "Git" },
+	  "tpope/vim-fugitive",
+	  cmd = { "G", "Git" },
   },
 
   { -- Tokyonight colourscheme
-    "folke/tokyonight.nvim",
-    lazy = false,
-    priority = 1000,
-    config = function()
-      vim.defer_fn(function()
-        vim.cmd[[colorscheme tokyonight]]
-      end, 0)
-    end,
+	  "folke/tokyonight.nvim",
+	  lazy = false,
+	  priority = 1000,
+	  config = function()
+		  vim.defer_fn(function()
+			  vim.cmd[[colorscheme tokyonight]]
+		  end, 0)
+	  end,
   },
 
-  { -- Autocompletion
+ { -- Autocompletion
     'hrsh7th/nvim-cmp',
     dependencies = {
       { 'L3MON4D3/LuaSnip' },
@@ -84,61 +84,52 @@ require("lazy").setup({
       { 'hrsh7th/cmp-nvim-lsp' },
       { 'williamboman/mason.nvim' },
       { 'williamboman/mason-lspconfig.nvim' },
-      { 'VonHeikemen/lsp-zero.nvim', branch = 'v3.x' },
+      { 'VonHeikemen/lsp-zero.nvim',        branch = 'v3.x' },
     },
     config = function()
       local lsp_zero = require('lsp-zero')
       lsp_zero.extend_lspconfig()
       lsp_zero.on_attach(function(client, bufnr)
-        lsp_zero.default_keymaps({ buffer = bufnr })
+      lsp_zero.default_keymaps({ buffer = bufnr })
       end)
       require('mason').setup()
-      require("lspconfig").nil_ls.setup({}) -- Nix LS
-      require("lspconfig").pyright.setup({}) -- Python LS
+      require("lspconfig").nil_ls.setup( {} ) -- Nix LS
+      require("lspconfig").pyright.setup( {} ) -- Python LS
       require("lspconfig").lua_ls.setup{ -- Lua LS
-        settings = {
-          Lua = {
-            diagnostics = {
-              globals = { "vim" },
-            },
-          },
-        },
-      }
+                          settings = {
+                                  Lua = {
+                                          diagnostics = {
+                                                  globals = {
+                                                          "vim"
+                                                  },
+                                          },
+                                  },
+                          },
+                  }
     end
   },
 
   { -- Telescope
-    "nvim-telescope/telescope.nvim",
-    lazy = false,
-    cmd = "Telescope",
-    tag = "0.1.8",
-    dependencies = { "nvim-lua/plenary.nvim" },
-    config = function()
-      require("telescope").setup{
-        defaults = {
-          layout_config = {
-            vertical = { width = 3 }
-          },
-        },
-        pickers = {
-          find_files = {
-            theme = "dropdown",
-          },
-        },
-      }
-    end,
+	  "nvim-telescope/telescope.nvim",
+	  lazy = false,
+	  cmd = "Telescope",
+	  tag = "0.1.8",
+	  dependencies = { "nvim-lua/plenary.nvim" },
+	  config = function()
+		  require("telescope")
+	  end,
   },
 
   { -- Nvim-Tree
-    "nvim-tree/nvim-tree.lua",
-    version = "*",
-    lazy = false,
-    dependencies = {
-      "nvim-tree/nvim-web-devicons",
-    },
-    config = function()
-      require("nvim-tree").setup {}
-    end,
+	  "nvim-tree/nvim-tree.lua",
+	  version = "*",
+	  lazy = false,
+	  dependencies = {
+		  "nvim-tree/nvim-web-devicons",
+	  },
+	  config = function()
+		  require("nvim-tree").setup {}
+	  end,
   },
 })
 
