@@ -1,15 +1,14 @@
--- Basic LSP configuration file
+-- Lanaguage Server Configuration
+-- lsp-zero v3
 
 local lsp = require('lsp-zero')
 
--- Use recommended preset
-lsp.preset('recommended')
+-- Setup mason and mason-lspconfig
+require('mason').setup()
+require('mason-lspconfig').setup()
 
--- Setup default keymaps when an LSP attaches
+-- Setup keymaps and attach logic
 lsp.on_attach(function(client, bufnr)
-  lsp.default_keymaps({ buffer = bufnr })
-
-  -- Useful keymaps
   local opts = { buffer = bufnr }
   vim.keymap.set("n", "gd", vim.lsp.buf.definition, opts)
   vim.keymap.set("n", "K", vim.lsp.buf.hover, opts)
@@ -20,66 +19,75 @@ lsp.on_attach(function(client, bufnr)
   end, opts)
 end)
 
--- Setup mason and mason-lspconfig
-require('mason').setup()
-require('mason-lspconfig').setup()
+-- Setup LSP capabilities
+local capabilities = require('cmp_nvim_lsp').default_capabilities()
 
--- Setup basic manual configurations
+-- Configure each LSP manually
 local lspconfig = require('lspconfig')
 
-lspconfig.cssls.setup({
+lspconfig.cssls.setup({ -- Configuration for the CSS language server
+  capabilities = capabilities,
+  on_attach = lsp.on_attach,
   settings = {
-    css = {
-      validate = true,
-    },
-    scss = {
-      validate = true,
-    },
-    less = {
-      validate = true,
-    },
+    css = { validate = true },
+    scss = { validate = true },
+    less = { validate = true },
   },
 })
 
-lspconfig.html.setup({
+lspconfig.html.setup({ -- Configuration for the HTML language server
+  capabilities = capabilities,
+  on_attach = lsp.on_attach,
   settings = {
     html = {
-      format = {
-        wrapLineLength = 120,
-        unformatted = "pre,code,textarea",
-      },
-      hover = {
-        documentation = true,
-        references = true,
-      },
+      format = { wrapLineLength = 120 },
+      hover = { documentation = true, references = true },
     },
   },
 })
 
-lspconfig.tsserver.setup({
+lspconfig.ts_ls.setup({ -- Configuration for the Typescript/Javascript language server
+  capabilities = capabilities,
+  on_attach = lsp.on_attach,
   settings = {
-    typescript = {
-      format = {
-        indentSize = 2,
-        tabSize = 2,
-      },
-    },
-    javascript = {
-      format = {
-        indentSize = 2,
-        tabSize = 2,
-      },
-    },
+    typescript = { format = { indentSize = 2, tabSize = 2 } },
+    javascript = { format = { indentSize = 2, tabSize = 2 } },
   },
 })
 
+-- Configuration for the Docker Compose language server
 lspconfig.docker_compose_language_service.setup({
+  capabilities = capabilities,
+  on_attach = lsp.on_attach,
   settings = {
-    dockerCompose = {
-      validate = true,
+    dockerCompose = { validate = true },
+  },
+})
+
+lspconfig.lua_ls.setup({ -- Configuration for the Lua language server
+  capabilities = capabilities,
+  on_attach = lsp.on_attach,
+  settings = {
+    Lua = {
+      diagnostics = { globals = { 'vim' } },
     },
   },
 })
 
--- Finish lsp-zero setup
-lsp.setup()
+lspconfig.pyright.setup({ -- Configuration for the Python language server
+  capabilities = capabilities,
+  on_attach = lsp.on_attach,
+})
+
+-- Manual configuration for the nil_ls if Nix is available 
+local nil_path = vim.fn.exepath("nil")
+if nil_path ~= "" then
+  lspconfig.nil_ls.setup({
+    cmd = { nil_path },
+    capabilities = capabilities,
+    on_attach = lsp.on_attach,
+    filetypes = { "nix" },
+    root_dir = require('lspconfig.util').root_pattern(".git", "flake.nix"),
+  })
+else
+end
