@@ -144,3 +144,4 @@ require("lazy").setup({
 
 -- Load general settings
 require("general")
+require("lsp")
