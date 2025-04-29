@@ -1,29 +1,85 @@
+-- Basic LSP configuration file
+
 local lsp = require('lsp-zero')
 
+-- Use recommended preset
 lsp.preset('recommended')
 
-lsp.ensure_installed({
-  'pyright',
-  'lua_ls',
-})
-
+-- Setup default keymaps when an LSP attaches
 lsp.on_attach(function(client, bufnr)
+  lsp.default_keymaps({ buffer = bufnr })
+
+  -- Useful keymaps
   local opts = { buffer = bufnr }
   vim.keymap.set("n", "gd", vim.lsp.buf.definition, opts)
   vim.keymap.set("n", "K", vim.lsp.buf.hover, opts)
   vim.keymap.set("n", "<leader>ca", vim.lsp.buf.code_action, opts)
+  vim.keymap.set("n", "<leader>rn", vim.lsp.buf.rename, opts)
+  vim.keymap.set("n", "<leader>f", function()
+    vim.lsp.buf.format({ async = true })
+  end, opts)
 end)
 
+-- Setup mason and mason-lspconfig
+require('mason').setup()
+require('mason-lspconfig').setup()
+
+-- Setup basic manual configurations
+local lspconfig = require('lspconfig')
+
+lspconfig.cssls.setup({
+  settings = {
+    css = {
+      validate = true,
+    },
+    scss = {
+      validate = true,
+    },
+    less = {
+      validate = true,
+    },
+  },
+})
+
+lspconfig.html.setup({
+  settings = {
+    html = {
+      format = {
+        wrapLineLength = 120,
+        unformatted = "pre,code,textarea",
+      },
+      hover = {
+        documentation = true,
+        references = true,
+      },
+    },
+  },
+})
+
+lspconfig.tsserver.setup({
+  settings = {
+    typescript = {
+      format = {
+        indentSize = 2,
+        tabSize = 2,
+      },
+    },
+    javascript = {
+      format = {
+        indentSize = 2,
+        tabSize = 2,
+      },
+    },
+  },
+})
+
+lspconfig.docker_compose_language_service.setup({
+  settings = {
+    dockerCompose = {
+      validate = true,
+    },
+  },
+})
+
+-- Finish lsp-zero setup
 lsp.setup()
-
-local nil_path = vim.fn.exepath("nil")
-if nil_path ~= "" then
-  require('lspconfig').nil_ls.setup({
-    cmd = { nil_path },
-    filetypes = { "nix" },
-    root_dir = require('lspconfig.util').root_pattern(".git", "flake.nix"),
-  })
-else
-  vim.notify("nil language server not found in PATH.", vim.log.levels.WARN)
-end
-

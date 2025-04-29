@@ -1,147 +1,93 @@
--- Install Lazy
-local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
-if not vim.loop.fs_stat(lazypath) then
-  vim.fn.system({
-    "git",
-    "clone",
-    "--filter=blob:none",
-    "https://github.com/folke/lazy.nvim.git",
-    "--branch=stable", -- latest stable release
-    lazypath,
-  })
-end
-vim.opt.rtp:prepend(lazypath)
+-- Lanaguage Server Configuration
+-- lsp-zero v3
 
--- Load lazy.nvim and plugins
-require("lazy").setup({
-  { -- Treesitter for highlighting
-    "nvim-treesitter/nvim-treesitter",
-    event = "BufRead",
-    run = ":TSUpdate",
-    config = function()
-      require("nvim-treesitter.configs").setup({
-        highlight = {
-          enable = true,
-        },
-      })
-    end,
-  },
+local lsp = require('lsp-zero')
 
-  { -- Fugitive for Git
-    "tpope/vim-fugitive",
-    cmd = { "G", "Git" },
-  },
+-- Setup mason and mason-lspconfig
+require('mason').setup()
+require('mason-lspconfig').setup()
 
-  { -- Tokyonight colourscheme
-    "folke/tokyonight.nvim",
-    lazy = false,
-    priority = 1000,
-    config = function()
-      vim.defer_fn(function()
-        vim.cmd[[colorscheme tokyonight]]
-      end, 0)
-    end,
-  },
+-- Setup keymaps and attach logic
+lsp.on_attach(function(client, bufnr)
+  local opts = { buffer = bufnr }
+  vim.keymap.set("n", "gd", vim.lsp.buf.definition, opts)
+  vim.keymap.set("n", "K", vim.lsp.buf.hover, opts)
+  vim.keymap.set("n", "<leader>ca", vim.lsp.buf.code_action, opts)
+  vim.keymap.set("n", "<leader>rn", vim.lsp.buf.rename, opts)
+  vim.keymap.set("n", "<leader>f", function()
+    vim.lsp.buf.format({ async = true })
+  end, opts)
+end)
 
-  { -- Autocompletion
-    'hrsh7th/nvim-cmp',
-    dependencies = {
-      { 'L3MON4D3/LuaSnip' },
-      { 'hrsh7th/cmp-nvim-lsp' },
-      { 'hrsh7th/cmp-nvim-lsp-signature-help' },
-    },
-    config = function()
-      local cmp = require('cmp')
-      local cmp_action = require('lsp-zero').cmp_action()
+-- Setup LSP capabilities
+local capabilities = require('cmp_nvim_lsp').default_capabilities()
 
-      cmp.setup({
-        sources = cmp.config.sources({
-          { name = 'nvim_lsp' },
-          { name = 'nvim_lsp_signature_help' }
-        }),
-        mapping = cmp.mapping.preset.insert({
-          -- `Enter` key to confirm completion
-          ['<CR>'] = cmp.mapping.confirm({ select = false }),
+-- Configure each LSP manually
+local lspconfig = require('lspconfig')
 
-          -- Ctrl+Space to trigger completion menu
-          ['<C-Space>'] = cmp.mapping.complete(),
-
-          -- Navigate between snippet placeholder
-          ['<C-f>'] = cmp_action.luasnip_jump_forward(),
-          ['<C-b>'] = cmp_action.luasnip_jump_backward(),
-
-          -- Scroll up and down in the completion documentation
-          ['<C-u>'] = cmp.mapping.scroll_docs(-4),
-          ['<C-d>'] = cmp.mapping.scroll_docs(4),
-        })
-      })
-    end
-  },
-
-  { -- LSP
-    "neovim/nvim-lspconfig",
-    dependencies = {
-      { 'hrsh7th/cmp-nvim-lsp' },
-      { 'williamboman/mason.nvim' },
-      { 'williamboman/mason-lspconfig.nvim' },
-      { 'VonHeikemen/lsp-zero.nvim', branch = 'v3.x' },
-    },
-    config = function()
-      local lsp_zero = require('lsp-zero')
-      lsp_zero.extend_lspconfig()
-      lsp_zero.on_attach(function(client, bufnr)
-        lsp_zero.default_keymaps({ buffer = bufnr })
-      end)
-      require('mason').setup()
-      require("lspconfig").nil_ls.setup({}) -- Nix LS
-      require("lspconfig").pyright.setup({}) -- Python LS
-      require("lspconfig").lua_ls.setup{ -- Lua LS
-        settings = {
-          Lua = {
-            diagnostics = {
-              globals = { "vim" },
-            },
-          },
-        },
-      }
-    end
-  },
-
-  { -- Telescope
-    "nvim-telescope/telescope.nvim",
-    lazy = false,
-    cmd = "Telescope",
-    tag = "0.1.8",
-    dependencies = { "nvim-lua/plenary.nvim" },
-    config = function()
-      require("telescope").setup{
-        defaults = {
-          layout_config = {
-            vertical = { width = 3 }
-          },
-        },
-        pickers = {
-          find_files = {
-            theme = "dropdown",
-          },
-        },
-      }
-    end,
-  },
-
-  { -- Nvim-Tree
-    "nvim-tree/nvim-tree.lua",
-    version = "*",
-    lazy = false,
-    dependencies = {
-      "nvim-tree/nvim-web-devicons",
-    },
-    config = function()
-      require("nvim-tree").setup {}
-    end,
+lspconfig.cssls.setup({ -- Configuration for the CSS language server
+  capabilities = capabilities,
+  on_attach = lsp.on_attach,
+  settings = {
+    css = { validate = true },
+    scss = { validate = true },
+    less = { validate = true },
   },
 })
 
--- Load general settings
-require("general")
-require("lsp")
+lspconfig.html.setup({ -- Configuration for the HTML language server
+  capabilities = capabilities,
+  on_attach = lsp.on_attach,
+  settings = {
+    html = {
+      format = { wrapLineLength = 120 },
+      hover = { documentation = true, references = true },
+    },
+  },
+})
+
+lspconfig.ts_ls.setup({ -- Configuration for the Typescript/Javascript language server
+  capabilities = capabilities,
+  on_attach = lsp.on_attach,
+  settings = {
+    typescript = { format = { indentSize = 2, tabSize = 2 } },
+    javascript = { format = { indentSize = 2, tabSize = 2 } },
+  },
+})
+
+-- Configuration for the Docker Compose language server
+lspconfig.docker_compose_language_service.setup({
+  capabilities = capabilities,
+  on_attach = lsp.on_attach,
+  settings = {
+    dockerCompose = { validate = true },
+  },
+})
+
+lspconfig.lua_ls.setup({ -- Configuration for the Lua language server
+  capabilities = capabilities,
+  on_attach = lsp.on_attach,
+  settings = {
+    Lua = {
+      diagnostics = { globals = { 'vim' } },
+    },
+  },
+})
+
+lspconfig.pyright.setup({ -- Configuration for the Python language server
+  capabilities = capabilities,
+  on_attach = lsp.on_attach,
+})
+
+-- Manual configuration for the nil_ls if Nix is available 
+local nil_path = vim.fn.exepath("nil")
+if nil_path ~= "" then
+  lspconfig.nil_ls.setup({
+    cmd = { nil_path },
+    capabilities = capabilities,
+    on_attach = lsp.on_attach,
+    filetypes = { "nix" },
+    root_dir = require('lspconfig.util').root_pattern(".git", "flake.nix"),
+  })
+else
+end
