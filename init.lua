@@ -86,6 +86,11 @@ require("lazy").setup({
     end,
   },
 
+  { -- VimBeGood
+    "ThePrimeagen/vim-be-good",
+    lazy = false,
+  },
+
   { -- lsp-zero v3 
     "neovim/nvim-lspconfig",
     dependencies = {
