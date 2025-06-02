@@ -2,6 +2,7 @@
 > *My Neovim Config!*
 
 **Plugin Manager:** [Lazy.nvim](https://github.com/folke/lazy.nvim)
+
 **Plugins:**
 - [Treesitter](https://github.com/nvim-treesitter/nvim-treesitter) for highlighting.
 - [Fugititve](https://github.com/tpope/vim-fugitive) for Git.
