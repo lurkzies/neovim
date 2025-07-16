@@ -41,29 +41,38 @@ require("lazy").setup({
 
   { -- Autocompletion
     "hrsh7th/nvim-cmp",
+    event = "InsertEnter",
     dependencies = {
       "L3MON4D3/LuaSnip",
       "hrsh7th/cmp-nvim-lsp",
       "hrsh7th/cmp-nvim-lsp-signature-help",
+      "hrsh7th/cmp-buffer",
     },
     config = function()
       local cmp = require('cmp')
       cmp.setup({
-        sources = {
-          { name = 'nvim_lsp' },
-          { name = 'nvim_lsp_signature_help' },
-        },
-        mapping = cmp.mapping.preset.insert({
-          ['<CR>'] = cmp.mapping.confirm({ select = false }),
-          ['<C-Space>'] = cmp.mapping.complete(),
-        }),
-      })
+        snippet = {
+          expand = function(args)
+            require('luasnip').lsp_expand(args.body)
+          end,
+      },
+      sources = {
+        { name = 'nvim_lsp' },
+        { name = 'luasnip' },    -- enable Luasnip source
+        { name = 'buffer' },     -- optional: buffer words
+      },
+      mapping = cmp.mapping.preset.insert({
+        ['<CR>'] = cmp.mapping.confirm({ select = true }),
+        ['<C-Space>'] = cmp.mapping.complete(),
+        ['<C-e>'] = cmp.mapping.abort(),
+      }),
+    })
     end,
   },
 
   { -- Telescope
     "nvim-telescope/telescope.nvim",
-    lazy = false,
+    cmd = "Telescope",
     tag = "0.1.8",
     dependencies = { "nvim-lua/plenary.nvim" },
     config = function()
@@ -77,7 +86,7 @@ require("lazy").setup({
 
   { -- File Explorer
     "nvim-tree/nvim-tree.lua",
-    lazy = false,
+    cmd = "NvimTreeToggle",
     dependencies = {
       "nvim-tree/nvim-web-devicons",
     },
@@ -88,11 +97,12 @@ require("lazy").setup({
 
   { -- VimBeGood
     "ThePrimeagen/vim-be-good",
-    lazy = false,
+    cmd = "VimBeGood",
   },
 
   { -- lsp-zero v3 
     "neovim/nvim-lspconfig",
+    event = {"BufReadPre", "BufNewFile"},
     dependencies = {
       "williamboman/mason.nvim",
       "williamboman/mason-lspconfig.nvim",
