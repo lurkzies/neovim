@@ -17,7 +17,7 @@ require("lazy").setup({
   { -- Treesitter
     "nvim-treesitter/nvim-treesitter",
     event = "BufRead",
-    run = ":TSUpdate",
+    build = ":TSUpdate",
     config = function()
       require("nvim-treesitter.configs").setup({
         highlight = { enable = true },
