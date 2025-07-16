@@ -100,17 +100,29 @@ require("lazy").setup({
     cmd = "VimBeGood",
   },
 
-  { -- lsp-zero v3 
-    "neovim/nvim-lspconfig",
-    event = {"BufReadPre", "BufNewFile"},
+  { -- Mason
+    "williamboman/mason.nvim",
+    build = ":MasonUpdate",
+  },
+
+  { -- Mason LSPConfig
+    "williamboman/mason-lspconfig.nvim",
+    version = "1.*",
+    dependencies = { "williamboman/mason.nvim" },
+  },
+
+  { -- LSP-Zero
+    "VonHeikemen/lsp-zero.nvim",
+    branch = "v3.x",
+    event  = { "BufReadPre", "BufNewFile" },
     dependencies = {
+      "neovim/nvim-lspconfig",
       "williamboman/mason.nvim",
-      "williamboman/mason-lspconfig.nvim",
-      "VonHeikemen/lsp-zero.nvim",
+      "williamboman/mason-lspconfig.nvim",  -- reuse the pinned table
       "hrsh7th/cmp-nvim-lsp",
     },
     config = function()
-      require("lsp") -- Load the Language Server configurations (lua/lsp.lua)
+      require("lsp")                 -- your lua/lsp.lua
     end,
   },
 })

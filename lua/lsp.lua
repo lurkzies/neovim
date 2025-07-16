@@ -1,93 +1,77 @@
--- Lanaguage Server Configuration
--- lsp-zero v3
+-- lsp-zero v3  ✦  mason-lspconfig 1.x  ✦  Neovim 0.9+
+local lsp         = require("lsp-zero")
+local capabilities = require("cmp_nvim_lsp").default_capabilities()
 
-local lsp = require('lsp-zero')
+require("mason").setup()
 
--- Setup mason and mason-lspconfig
-require('mason').setup()
-require('mason-lspconfig').setup()
+require("mason-lspconfig").setup({
+  ensure_installed = {
+    "lua_ls",
+    "ts_ls",                       -- <- new TypeScript name
+    "clangd",
+    "pyright",
+    "html",
+    "cssls",
+    "docker_compose_language_service",
+  },
+  automatic_installation = true,   -- ← works in v1, harmless in 1.*
+  handlers = {
+    function(server)
+      require("lspconfig")[server].setup({
+        on_attach    = lsp.on_attach,
+        capabilities = capabilities,
+      })
+    end,
 
--- Setup keymaps and attach logic
+    ["lua_ls"] = function()
+      require("lspconfig").lua_ls.setup({
+        on_attach    = lsp.on_attach,
+        capabilities = capabilities,
+        settings     = { Lua = { diagnostics = { globals = { "vim" } } } },
+      })
+    end,
+
+    ["ts_ls"] = function()
+      require("lspconfig").ts_ls.setup({
+        on_attach    = lsp.on_attach,
+        capabilities = capabilities,
+        settings = {
+          typescript = { format = { indentSize = 2, tabSize = 2 } },
+          javascript = { format = { indentSize = 2, tabSize = 2 } },
+        },
+      })
+    end,
+  },
+})
+
+-- common key-maps + on-save formatting
 lsp.on_attach(function(client, bufnr)
-  local opts = { buffer = bufnr }
-  vim.keymap.set("n", "gd", vim.lsp.buf.definition, opts)
-  vim.keymap.set("n", "K", vim.lsp.buf.hover, opts)
-  vim.keymap.set("n", "<leader>ca", vim.lsp.buf.code_action, opts)
-  vim.keymap.set("n", "<leader>rn", vim.lsp.buf.rename, opts)
-  vim.keymap.set("n", "<leader>f", function()
-    vim.lsp.buf.format({ async = true })
-  end, opts)
+  local o = { buffer = bufnr }
+  vim.keymap.set("n", "gd",         vim.lsp.buf.definition,    o)
+  vim.keymap.set("n", "K",          vim.lsp.buf.hover,         o)
+  vim.keymap.set("n", "<leader>ca", vim.lsp.buf.code_action,   o)
+  vim.keymap.set("n", "<leader>rn", vim.lsp.buf.rename,        o)
+  vim.keymap.set("n", "<leader>gr", vim.lsp.buf.references,    o)
+  vim.keymap.set("n", "<leader>d",  vim.diagnostic.open_float, o)
+  vim.keymap.set("n", "<leader>f",  function() vim.lsp.buf.format({ async = true }) end, o)
+
+  if client.supports_method("textDocument/formatting") then
+    vim.api.nvim_create_autocmd("BufWritePre", {
+      group   = vim.api.nvim_create_augroup("LspFormat." .. bufnr, { clear = true }),
+      buffer  = bufnr,
+      callback = function() vim.lsp.buf.format({ async = false }) end,
+    })
+  end
 end)
 
--- Setup LSP capabilities
-local capabilities = require('cmp_nvim_lsp').default_capabilities()
-
--- Configure each LSP manually
-local lspconfig = require('lspconfig')
-
-lspconfig.cssls.setup({ -- Configuration for the CSS language server
-  capabilities = capabilities,
-  on_attach = lsp.on_attach,
-  settings = {
-    css = { validate = true },
-    scss = { validate = true },
-    less = { validate = true },
-  },
-})
-
-lspconfig.html.setup({ -- Configuration for the HTML language server
-  capabilities = capabilities,
-  on_attach = lsp.on_attach,
-  settings = {
-    html = {
-      format = { wrapLineLength = 120 },
-      hover = { documentation = true, references = true },
-    },
-  },
-})
-
-lspconfig.ts_ls.setup({ -- Configuration for the Typescript/Javascript language server
-  capabilities = capabilities,
-  on_attach = lsp.on_attach,
-  settings = {
-    typescript = { format = { indentSize = 2, tabSize = 2 } },
-    javascript = { format = { indentSize = 2, tabSize = 2 } },
-  },
-})
-
--- Configuration for the Docker Compose language server
-lspconfig.docker_compose_language_service.setup({
-  capabilities = capabilities,
-  on_attach = lsp.on_attach,
-  settings = {
-    dockerCompose = { validate = true },
-  },
-})
-
-lspconfig.lua_ls.setup({ -- Configuration for the Lua language server
-  capabilities = capabilities,
-  on_attach = lsp.on_attach,
-  settings = {
-    Lua = {
-      diagnostics = { globals = { 'vim' } },
-    },
-  },
-})
-
-lspconfig.pyright.setup({ -- Configuration for the Python language server
-  capabilities = capabilities,
-  on_attach = lsp.on_attach,
-})
-
--- Manual configuration for the nil_ls if Nix is available 
+-- Optional Nix LSP
 local nil_path = vim.fn.exepath("nil")
 if nil_path ~= "" then
-  lspconfig.nil_ls.setup({
-    cmd = { nil_path },
+  require("lspconfig").nil_ls.setup({
+    cmd         = { nil_path },
+    on_attach   = lsp.on_attach,
     capabilities = capabilities,
-    on_attach = lsp.on_attach,
-    filetypes = { "nix" },
-    root_dir = require('lspconfig.util').root_pattern(".git", "flake.nix"),
+    filetypes   = { "nix" },
+    root_dir    = require("lspconfig.util").root_pattern(".git", "flake.nix"),
   })
-else
 end
