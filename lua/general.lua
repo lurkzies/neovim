@@ -13,7 +13,7 @@ vim.opt.background = "dark"       -- Set background preference for themes
 -- Nvim-Tree
 vim.api.nvim_set_keymap('n', '<leader>e', ':NvimTreeToggle<CR>', { noremap = true, silent = true })
 -- Nvim-Telescope
-vim.api.nvim_set_keymap('n', '<leader>f', ':Telescope find_files<CR>', { noremap = true, silent = true})
+vim.api.nvim_set_keymap('n', '<leader>ff', ':Telescope find_files<CR>', { noremap = true, silent = true})
 -- Remove arrow key navigation (Normal Mode)
 vim.api.nvim_set_keymap('n', '<Up>', '<Nop>', { noremap = true, silent = true})
 vim.api.nvim_set_keymap('n', '<Down>', '<Nop>', { noremap = true, silent = true})
