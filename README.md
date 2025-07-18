@@ -20,7 +20,14 @@
 2. Clone this repository into your Neovim config directory:
 
     ```bash
+    # On Linux:
     git clone https://github.com/lurkzies/neovim ~/.config/nvim
+    ```
+
+    ```powershell
+    # On Windows:
+    git clone https://github.com/lurkzies/neovim ~\AppData\Local\nvim # PowerShell
+    git clone https://github.com/lurkzies/neovim C:\Users\YOUR_USER\AppData\Local\nvim # cmd
     ```
 
 3. Open Neovim (`nvim`). Plugins will automatically install via Lazy.nvim on first launch.
