@@ -16,7 +16,15 @@
 
 ## [] Installation ⚙️
 
-1. 1. Install [Neovim](https://neovim.io/) (version 0.9+ recommended).
+### [] Dependencies
+
+- git
+- npm
+- unzip
+
+### [] Steps to Install on Linux and Windows
+
+1. Install [Neovim](https://neovim.io/) (version 0.9+ recommended).
 2. Clone this repository into your Neovim config directory:
 
     ```bash
